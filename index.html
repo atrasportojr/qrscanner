@@ -21,55 +21,36 @@
             color: green;
             margin-top: 10px;
         }
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <h2>QR Code Scanner</h2>
     <div id="qr-reader"></div>
     <p>Scanned Result: <span id="qr-result">None</span></p>
-    <p id="status-message" class="hidden"></p>
 
     <script>
-        const API_ENDPOINT = "https://localhost:12345/api/qr"; // Change this to your actual endpoint
+        window.onload = function () {
+            console.log("Html5Qrcode:", typeof Html5Qrcode); // Debugging step
 
-        function sendToServer(qrData) {
-            fetch(API_ENDPOINT, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ qr_code: qrData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("status-message").innerText = "✅ Sent successfully!";
-                document.getElementById("status-message").classList.remove("hidden");
-            })
-            .catch(error => {
-                console.error("Error sending QR code:", error);
-                document.getElementById("status-message").innerText = "❌ Failed to send!";
-                document.getElementById("status-message").classList.remove("hidden");
-            });
-        }
+            if (typeof Html5Qrcode === "undefined") {
+                console.error("Html5Qrcode library is not loaded.");
+                return;
+            }
 
-        function onScanSuccess(decodedText) {
-            document.getElementById("qr-result").innerText = decodedText;
-            alert("QR Code Scanned: " + decodedText);
-            sendToServer(decodedText); // Send QR code data to server
-        }
+            const qrScanner = new Html5Qrcode("qr-reader");
 
-        function onScanFailure(error) {
-            console.warn(`QR scan error: ${error}`);
-        }
-
-        let qrScanner = new Html5Qrcode("qr-reader");
-        qrScanner.start(
-            { facingMode: "environment" }, // Rear camera
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            onScanFailure
-        );
+            qrScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    document.getElementById("qr-result").innerText = decodedText;
+                    alert("QR Code Scanned: " + decodedText);
+                },
+                (error) => {
+                    console.warn(`QR scan error: ${error}`);
+                }
+            );
+        };
     </script>
 </body>
 </html>
